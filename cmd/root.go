@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"rick/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -48,7 +49,7 @@ func init() {
 }
 
 func initializeConfig() {
-	if err := InitConfig(); err != nil {
+	if err := config.InitConfig(); err != nil {
 		fmt.Printf("Error initializing config: %v\n", err)
 		os.Exit(1)
 	}

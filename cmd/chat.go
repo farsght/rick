@@ -108,7 +108,7 @@ var chatCmd = &cobra.Command{
 			log.Fatalf("Error reading input: %v", err)
 		}
 
-		systemPrompt := "You are an AI assistant named Rick. Always refer to yourself as Rick when appropriate."
+		systemPrompt := "You are an AI assistant named Rick. Always refer to yourself as Rick when appropriate. Always respond in plain text. No Markdown."
 		content := []llms.MessageContent{
 			llms.TextParts(llms.ChatMessageTypeSystem, systemPrompt),
 		}

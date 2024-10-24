@@ -33,7 +33,9 @@ var configCmd = &cobra.Command{
 Example: rick config set api_key YOUR_API_KEY`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// If no subcommand is provided, show help
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			log.Fatalf("Error showing help: %v", err)
+		}
 	},
 }
 

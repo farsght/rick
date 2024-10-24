@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -10,30 +11,30 @@ import (
 
 // Config represents the structure of your configuration
 type Config struct {
-	OpenAIKey     string `yaml:"openai_key"`
-	AnthropicKey  string `yaml:"anthropic_key"`
-	PerplexityKey string `yaml:"perplexity_key"`
-	ActiveModel   string `yaml:"active_model"`
-	Models        struct {
-		OpenAI     string `yaml:"openai"`
-		Anthropic  string `yaml:"anthropic"`
-		Perplexity string `yaml:"perplexity"`
-	} `yaml:"models"`
-	Version  string `yaml:"version"`
-	BuildNum string `yaml:"build_num"`
+	OpenAIKey      string `yaml:"openai_key"`
+	AnthropicKey   string `yaml:"anthropic_key"`
+	PerplexityKey  string `yaml:"perplexity_key"`
+	ActiveModel    string `yaml:"active_model"`
+	Models         Models `yaml:"models"`
+	Version        string `yaml:"version"`
+	BuildNum       string `yaml:"build_num"`
+	configFilePath string
 }
 
-// Default configuration
+// Models represents the available models for each provider
+type Models struct {
+	OpenAI     string `yaml:"openai"`
+	Anthropic  string `yaml:"anthropic"`
+	Perplexity string `yaml:"perplexity"`
+}
+
+// DefaultConfig is the default configuration
 var DefaultConfig = Config{
 	OpenAIKey:     "",
 	AnthropicKey:  "",
 	PerplexityKey: "",
 	ActiveModel:   "openai",
-	Models: struct {
-		OpenAI     string `yaml:"openai"`
-		Anthropic  string `yaml:"anthropic"`
-		Perplexity string `yaml:"perplexity"`
-	}{
+	Models: Models{
 		OpenAI:     "gpt-4",
 		Anthropic:  "claude-2",
 		Perplexity: "mixtral-8x7b-instruct",
@@ -42,7 +43,7 @@ var DefaultConfig = Config{
 	BuildNum: "0",
 }
 
-// Helper function to mask API key
+// MaskAPIKey masks the API key for display purposes
 func MaskAPIKey(key string) string {
 	if len(key) <= 8 {
 		return "****"
@@ -51,13 +52,12 @@ func MaskAPIKey(key string) string {
 }
 
 // GetConfigFilePath returns the full path to the config file
-func GetConfigFilePath() string {
-	_, configFile := GetConfigPath()
-	return configFile
+func (c *Config) GetConfigFilePath() string {
+	return c.configFilePath
 }
 
-// GetConfigPath returns the path to the config directory and file
-func GetConfigPath() (string, string) {
+// getConfigPath returns the path to the config directory and file
+func getConfigPath() (string, string) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Printf("Error getting home directory: %v\n", err)
@@ -69,17 +69,15 @@ func GetConfigPath() (string, string) {
 	return configDir, configFile
 }
 
+// InitConfig initializes the configuration file
 func InitConfig() error {
-	configDir, configFile := GetConfigPath()
+	configDir, configFile := getConfigPath()
 
-	// Create config directory if it doesn't exist
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return fmt.Errorf("failed to create config directory: %v", err)
 	}
 
-	// Check if config file exists
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		// Create and write default config
 		data, err := yaml.Marshal(DefaultConfig)
 		if err != nil {
 			return fmt.Errorf("failed to marshal default config: %v", err)
@@ -97,7 +95,7 @@ func InitConfig() error {
 
 // LoadConfig reads the configuration file
 func LoadConfig() (*Config, error) {
-	_, configFile := GetConfigPath()
+	_, configFile := getConfigPath()
 
 	data, err := os.ReadFile(configFile)
 	if err != nil {
@@ -108,22 +106,35 @@ func LoadConfig() (*Config, error) {
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %v", err)
 	}
+	config.configFilePath = configFile
 
 	return &config, nil
 }
 
 // SaveConfig writes the configuration to file
-func SaveConfig(config *Config) error {
-	_, configFile := GetConfigPath()
-
-	data, err := yaml.Marshal(config)
+func (c *Config) SaveConfig() error {
+	data, err := yaml.Marshal(c)
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %v", err)
 	}
 
-	if err := os.WriteFile(configFile, data, 0644); err != nil {
+	if err := os.WriteFile(c.configFilePath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %v", err)
 	}
 
 	return nil
+}
+
+func GetConfigFilePath() string {
+
+	home, err := os.UserHomeDir()
+
+	if err != nil {
+
+		log.Fatalf("Error getting user home directory: %v", err)
+
+	}
+
+	return filepath.Join(home, ".rick", "config.json")
+
 }

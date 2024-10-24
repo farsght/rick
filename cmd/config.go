@@ -54,7 +54,7 @@ var configSetCmd = &cobra.Command{
 			log.Fatalf("Unknown configuration key: %s", key)
 		}
 
-		if err := config.SaveConfig(cfg); err != nil {
+		if err := cfg.SaveConfig(); err != nil {
 			log.Fatalf("Error saving config: %v", err)
 		}
 

@@ -71,7 +71,7 @@ var modelSetCmd = &cobra.Command{
 			log.Fatalf("Unknown provider: %s. Available providers: openai, anthropic, perplexity", provider)
 		}
 
-		if err := config.SaveConfig(cfg); err != nil {
+		if err := cfg.SaveConfig(); err != nil {
 			log.Fatalf("Error saving config: %v", err)
 		}
 
@@ -98,7 +98,7 @@ var modelActiveCmd = &cobra.Command{
 			log.Fatalf("Unknown provider: %s. Available providers: openai, anthropic, perplexity", provider)
 		}
 
-		if err := config.SaveConfig(cfg); err != nil {
+		if err := cfg.SaveConfig(); err != nil {
 			log.Fatalf("Error saving config: %v", err)
 		}
 
